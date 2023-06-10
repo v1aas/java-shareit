@@ -7,7 +7,6 @@ import ru.practicum.shareit.error.ErrorResponse;
 import ru.practicum.shareit.exception.ResourceNotFoundException;
 import ru.practicum.shareit.exception.ValidationException;
 import ru.practicum.shareit.item.dto.ItemDto;
-import ru.practicum.shareit.item.model.Item;
 import ru.practicum.shareit.item.service.ItemService;
 
 import java.util.List;
@@ -39,18 +38,18 @@ public class ItemController {
     }
 
     @PostMapping
-    public Item postItem(@RequestHeader("X-Sharer-User-Id") int ownerId, @RequestBody ItemDto itemDto) {
+    public ItemDto postItem(@RequestHeader("X-Sharer-User-Id") int ownerId, @RequestBody ItemDto itemDto) {
         return itemService.postItem(ownerId, itemDto);
     }
 
     @PatchMapping("/{id}")
-    public Item patchItem(@RequestHeader("X-Sharer-User-Id") int ownerId, @PathVariable int id,
-                          @RequestBody ItemDto itemDto) {
+    public ItemDto patchItem(@RequestHeader("X-Sharer-User-Id") int ownerId, @PathVariable int id,
+                             @RequestBody ItemDto itemDto) {
         return itemService.patchItem(ownerId, id, itemDto);
     }
 
     @DeleteMapping("/{id}")
-    public Item deleteItem(@RequestHeader("X-Sharer-User-Id") int ownerId, @PathVariable int id) {
+    public ItemDto deleteItem(@RequestHeader("X-Sharer-User-Id") int ownerId, @PathVariable int id) {
         return itemService.deleteItem(ownerId, id);
     }
 

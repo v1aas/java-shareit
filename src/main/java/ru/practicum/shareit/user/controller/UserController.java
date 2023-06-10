@@ -6,6 +6,7 @@ import org.springframework.web.bind.annotation.*;
 import ru.practicum.shareit.error.ErrorResponse;
 import ru.practicum.shareit.exception.ResourceNotFoundException;
 import ru.practicum.shareit.exception.ValidationException;
+import ru.practicum.shareit.user.dto.UserDto;
 import ru.practicum.shareit.user.model.User;
 import ru.practicum.shareit.user.service.UserService;
 
@@ -23,27 +24,27 @@ public class UserController {
     }
 
     @GetMapping
-    public List<User> getUsers() {
+    public List<UserDto> getUsers() {
         return userService.getUsers();
     }
 
     @GetMapping("/{id}")
-    public User getUser(@PathVariable int id) {
+    public UserDto getUser(@PathVariable int id) {
         return userService.getUser(id);
     }
 
     @PostMapping
-    public User postUser(@Valid @RequestBody User user) {
+    public UserDto postUser(@Valid @RequestBody User user) {
         return userService.postUser(user);
     }
 
     @PatchMapping("/{id}")
-    public User patchUser(@PathVariable int id, @RequestBody User user) {
+    public UserDto patchUser(@PathVariable int id, @RequestBody User user) {
         return userService.patchUser(id, user);
     }
 
     @DeleteMapping("/{id}")
-    public User deleteUser(@PathVariable int id) {
+    public UserDto deleteUser(@PathVariable int id) {
         return userService.deleteUser(id);
     }
 

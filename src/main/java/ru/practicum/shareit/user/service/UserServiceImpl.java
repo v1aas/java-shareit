@@ -1,75 +1,51 @@
 package ru.practicum.shareit.user.service;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import ru.practicum.shareit.exception.ResourceNotFoundException;
-import ru.practicum.shareit.exception.ValidationException;
+import ru.practicum.shareit.user.dto.UserDto;
+import ru.practicum.shareit.user.mapper.UserMapper;
 import ru.practicum.shareit.user.model.User;
+import ru.practicum.shareit.user.storage.UserStorage;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 
 @Service
 public class UserServiceImpl implements UserService {
-    private final HashMap<Integer, User> userMap = new HashMap<>();
-    private int id;
 
-    @Override
-    public User getUser(int id) {
-        return userMap.get(id);
+    private final UserStorage userStorage;
+
+    @Autowired
+    public UserServiceImpl(UserStorage userStorage) {
+        this.userStorage = userStorage;
     }
 
     @Override
-    public List<User> getUsers() {
-        return new ArrayList<>(userMap.values());
+    public UserDto getUser(int id) {
+        return UserMapper.toUserDto(userStorage.getUser(id));
     }
 
     @Override
-    public User postUser(User user) {
-        nameAndEmailValidation(user);
-        repeatedEmailValidation(user);
-        user.setId(++id);
-        userMap.put(id, user);
-        return user;
+    public List<UserDto> getUsers() {
+        ArrayList<UserDto> users = new ArrayList<>();
+        for (User user : userStorage.getUsers()) {
+            users.add(UserMapper.toUserDto(user));
+        }
+        return users;
     }
 
     @Override
-    public User patchUser(int id, User user) {
-        user.setId(id);
-        repeatedEmailValidation(user);
-        if (!userMap.containsKey(id)) {
-            throw new ValidationException("Пользователя с таким id нет");
-        }
-        if (user.getName() != null) {
-            userMap.get(id).setName(user.getName());
-        }
-        if (user.getEmail() != null) {
-            userMap.get(id).setEmail(user.getEmail());
-        }
-        return userMap.get(id);
+    public UserDto postUser(User user) {
+        return UserMapper.toUserDto(userStorage.postUser(user));
     }
 
     @Override
-    public User deleteUser(int id) {
-        User user = userMap.get(id);
-        userMap.remove(id);
-        return user;
+    public UserDto patchUser(int id, User user) {
+        return UserMapper.toUserDto(userStorage.patchUser(id, user));
     }
 
-    private void nameAndEmailValidation(User user) {
-        if (user.getEmail() == null || user.getName() == null) {
-            throw new ResourceNotFoundException("Имя или email не заполнены");
-        }
-    }
-
-    private void repeatedEmailValidation(User user) {
-        for (User us : userMap.values()) {
-            if (user.getId() == us.getId()) {
-                continue;
-            }
-            if (us.getEmail().equals(user.getEmail())) {
-                throw new ValidationException("Такой email уже существует");
-            }
-        }
+    @Override
+    public UserDto deleteUser(int id) {
+        return UserMapper.toUserDto(userStorage.deleteUser(id));
     }
 }
