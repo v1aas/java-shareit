@@ -137,7 +137,7 @@ public class BookingServiceDB implements BookingService {
         switch (state) {
             case "CURRENT":
                 bookings = repository.getCurrentByUserId(userId);
-                bookings.sort(Comparator.comparing(Booking::getStart).reversed());
+                bookings.sort(Comparator.comparing(Booking::getStart));
                 for (Booking book : bookings) {
                     bookingsDto.add(BookingMapper.toBookingFullDto(book));
                 }

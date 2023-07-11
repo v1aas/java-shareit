@@ -19,9 +19,9 @@ public class Booking {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "id")
     private Integer id;
-    @Column(name = "start_time")
+    @Column(name = "start_date")
     private LocalDateTime start;
-    @Column(name = "end_time")
+    @Column(name = "end_date")
     private LocalDateTime end;
     @ManyToOne
     @JoinColumn(name = "item_id")
