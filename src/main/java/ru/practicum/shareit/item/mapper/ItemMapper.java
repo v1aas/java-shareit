@@ -10,7 +10,21 @@ public class ItemMapper {
                 item.getId(),
                 item.getName(),
                 item.getDescription(),
-                item.getAvailable()
+                item.getAvailable(),
+                null,
+                null,
+                null
+        );
+    }
+
+    public static Item toItem(ItemDto item) {
+        return new Item(
+                null,
+                item.getName(),
+                item.getDescription(),
+                item.getAvailable(),
+                null,
+                null
         );
     }
 }
