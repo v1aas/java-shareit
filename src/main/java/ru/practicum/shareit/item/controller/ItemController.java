@@ -3,12 +3,13 @@ package ru.practicum.shareit.item.controller;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
-import ru.practicum.shareit.error.ErrorResponse;
-import ru.practicum.shareit.exception.ResourceNotFoundException;
 import ru.practicum.shareit.exception.ValidationException;
+import ru.practicum.shareit.exception.error.ErrorResponse;
+import ru.practicum.shareit.item.dto.CommentDto;
 import ru.practicum.shareit.item.dto.ItemDto;
 import ru.practicum.shareit.item.service.ItemService;
 
+import javax.persistence.EntityNotFoundException;
 import java.util.List;
 
 @RestController
@@ -28,8 +29,8 @@ public class ItemController {
     }
 
     @GetMapping("/{id}")
-    public ItemDto getItem(@PathVariable int id) {
-        return itemService.getItem(id);
+    public ItemDto getItem(@RequestHeader("X-Sharer-User-Id") int userId, @PathVariable int id) {
+        return itemService.getItem(userId, id);
     }
 
     @GetMapping("/search")
@@ -40,6 +41,12 @@ public class ItemController {
     @PostMapping
     public ItemDto postItem(@RequestHeader("X-Sharer-User-Id") int ownerId, @RequestBody ItemDto itemDto) {
         return itemService.postItem(ownerId, itemDto);
+    }
+
+    @PostMapping("/{itemId}/comment")
+    public CommentDto postComment(@RequestHeader("X-Sharer-User-Id") int userId, @PathVariable int itemId,
+                                  @RequestBody CommentDto commentDto) {
+        return itemService.postComment(userId, itemId, commentDto);
     }
 
     @PatchMapping("/{id}")
@@ -54,20 +61,20 @@ public class ItemController {
     }
 
     @ExceptionHandler
-    @ResponseStatus(HttpStatus.CONFLICT)
-    public ErrorResponse validationExp(final ValidationException e) {
-        return new ErrorResponse(e.getMessage());
-    }
-
-    @ExceptionHandler
     @ResponseStatus(HttpStatus.BAD_REQUEST)
-    public ErrorResponse reqExp(final ResourceNotFoundException e) {
+    public ErrorResponse reqExp(final ValidationException e) {
         return new ErrorResponse(e.getMessage());
     }
 
     @ExceptionHandler
     @ResponseStatus(HttpStatus.NOT_FOUND)
-    public ErrorResponse reqExp(final NullPointerException e) {
+    public ErrorResponse nullExp(final NullPointerException e) {
+        return new ErrorResponse(e.getMessage());
+    }
+
+    @ExceptionHandler
+    @ResponseStatus(HttpStatus.NOT_FOUND)
+    public ErrorResponse entityNotFoundExp(final EntityNotFoundException e) {
         return new ErrorResponse(e.getMessage());
     }
 }

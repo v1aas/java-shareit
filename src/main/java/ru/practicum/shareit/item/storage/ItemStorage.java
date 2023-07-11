@@ -1,5 +1,4 @@
-package ru.practicum.shareit.item.storage;
-
+/*package ru.practicum.shareit.item.storage;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import ru.practicum.shareit.exception.ResourceNotFoundException;
@@ -41,7 +40,7 @@ public class ItemStorage {
                 item.getName(),
                 item.getDescription(),
                 item.getAvailable(),
-                ownerId,
+                null,
                 null
         );
         itemMap.put(id, newItem);
@@ -103,4 +102,5 @@ public class ItemStorage {
             throw new ResourceNotFoundException("Нужно заполнить: имя, описание, доступность");
         }
     }
-}
+ }
+*/
