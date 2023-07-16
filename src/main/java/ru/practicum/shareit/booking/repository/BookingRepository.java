@@ -1,7 +1,5 @@
 package ru.practicum.shareit.booking.repository;
 
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import ru.practicum.shareit.booking.model.Booking;
@@ -49,15 +47,4 @@ public interface BookingRepository extends JpaRepository<Booking, Integer> {
             "and b.end < current_timestamp " +
             "order by b.start desc")
     List<Booking> getBookingByUserIdAndFinishAfterNow(Integer userId);
-
-    @Query("select b " +
-            "from Booking as b " +
-            "join b.booker as u " +
-            "where u.id = ?1 " +
-            "and b.start > current_timestamp " +
-            "order by b.start desc")
-    Page<Booking> getBookingByUserIdAndStarBeforeNow(Integer userId, Pageable page);
-
-    Page<Booking> getByBookerIdAndStatusContainingIgnoreCaseOrderByStartDesc(Integer userId, String state,
-                                                                             Pageable pageable);
 }

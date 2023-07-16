@@ -9,6 +9,7 @@ import ru.practicum.shareit.user.mapper.UserMapper;
 import ru.practicum.shareit.user.model.User;
 import ru.practicum.shareit.user.repository.UserRepository;
 
+import javax.transaction.Transactional;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -33,20 +34,20 @@ public class UserServiceDB implements UserService {
     }
 
     @Override
-    public UserDto postUser(User user) {
+    public UserDto postUser(UserDto user) {
         if (user.getName() == null || user.getEmail() == null) {
             throw new ValidationException("Нужно заполнить все поля!");
         }
-        repository.save(user);
-        return UserMapper.toUserDto(user);
+        if (!isValidEmail(user.getEmail())) {
+            throw new ValidationException("Почта некорректна");
+        }
+        return UserMapper.toUserDto(repository.save(UserMapper.toUser(user)));
     }
 
+    @Transactional
     @Override
-    public UserDto patchUser(int id, User user) {
+    public UserDto patchUser(int id, UserDto user) {
         user.setId(id);
-        if (repository.findByEmail(user.getEmail()) != null && !user.getEmail().equals(getUser(id).getEmail())) {
-            repository.save(user);
-        }
         User existsUser = repository.findById(id).orElseThrow(() ->
                 new ResourceNotFoundException("Такого пользователя не существует"));
         if (user.getName() != null) {
@@ -55,8 +56,7 @@ public class UserServiceDB implements UserService {
         if (user.getEmail() != null) {
             existsUser.setEmail(user.getEmail());
         }
-        repository.save(existsUser);
-        return UserMapper.toUserDto(existsUser);
+        return UserMapper.toUserDto(repository.save(existsUser));
     }
 
     @Override
@@ -64,5 +64,13 @@ public class UserServiceDB implements UserService {
         UserDto user = UserMapper.toUserDto(repository.getById(id));
         repository.deleteById(id);
         return user;
+    }
+
+    private boolean isValidEmail(String email) {
+        if (email.contains("@")) {
+            return true;
+        } else {
+            return false;
+        }
     }
 }

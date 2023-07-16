@@ -5,7 +5,6 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import javax.persistence.*;
-import javax.validation.constraints.Email;
 
 @AllArgsConstructor
 @NoArgsConstructor
@@ -21,7 +20,6 @@ public class User {
     @Column(name = "name", nullable = false)
     private String name;
 
-    @Email(regexp = ".*@.*", message = "Неправильный формат почты")
     @Column(name = "email", nullable = false, unique = true)
     private String email;
 }

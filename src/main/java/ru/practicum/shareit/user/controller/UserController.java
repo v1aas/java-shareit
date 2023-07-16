@@ -7,7 +7,6 @@ import org.springframework.web.bind.annotation.*;
 import ru.practicum.shareit.exception.ValidationException;
 import ru.practicum.shareit.exception.error.ErrorResponse;
 import ru.practicum.shareit.user.dto.UserDto;
-import ru.practicum.shareit.user.model.User;
 import ru.practicum.shareit.user.service.UserService;
 
 import javax.persistence.EntityNotFoundException;
@@ -35,12 +34,12 @@ public class UserController {
     }
 
     @PostMapping
-    public UserDto postUser(@Valid @RequestBody User user) {
+    public UserDto postUser(@Valid @RequestBody UserDto user) {
         return userService.postUser(user);
     }
 
     @PatchMapping("/{id}")
-    public UserDto patchUser(@PathVariable int id, @RequestBody User user) {
+    public UserDto patchUser(@PathVariable int id, @RequestBody UserDto user) {
         return userService.patchUser(id, user);
     }
 

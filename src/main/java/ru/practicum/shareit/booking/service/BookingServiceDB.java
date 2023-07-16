@@ -6,6 +6,7 @@ import ru.practicum.shareit.booking.dto.BookingDto;
 import ru.practicum.shareit.booking.dto.BookingFullDto;
 import ru.practicum.shareit.booking.mapper.BookingMapper;
 import ru.practicum.shareit.booking.model.Booking;
+import ru.practicum.shareit.booking.model.BookingState;
 import ru.practicum.shareit.booking.model.BookingStatus;
 import ru.practicum.shareit.booking.repository.BookingRepository;
 import ru.practicum.shareit.exception.ValidationException;
@@ -86,71 +87,30 @@ public class BookingServiceDB implements BookingService {
         if (userRepository.findById(userId).isEmpty()) {
             throw new NullPointerException("Такого пользователя нет");
         }
-//        Sort sortByDate = Sort.by(Sort.Direction.ASC, "start");
-//        Pageable page = PageRequest.of(0, 10, sortByDate);
-//        switch (state) {
-//            case "ALL":
-//                return repository.getByBookerIdOrderByStartDesc(userId, page).toList();
-//            case "CURRENT":
-//                return repository.getCurrentByUserId(userId, page).toList();
-//            case "PAST":
-//                return repository.getBookingByUserIdAndFinishAfterNow(userId, page).toList();
-//            case "FUTURE":
-//                return repository.getBookingByUserIdAndStarBeforeNow(userId, page).toList();
-//            case "WAITING":
-//            case "REJECTED":
-//                return repository.getByBookerIdAndStatusContainingIgnoreCaseOrderByStartDesc(userId, state, page).toList();
-//            default:
-//                throw new ValidationException("Unknown state: UNSUPPORTED_STATUS");
-//        }
-//        User booker = userRepository.getById(userId);
-//        List<BookingFullDto> bookings = new ArrayList<>();
-//        switch (state) {
-//            case "ALL":
-//                for (Booking book : repository.getByBookerIdOrderByStartDesc(booker)) {
-//                    bookings.add(BookingMapper.toBookingFullDto(book));
-//                }
-//                return bookings;
-//            case "CURRENT":
-//                for (Booking book : repository.getCurrentByUserId(booker.getId())) {
-//                    bookings.add(BookingMapper.toBookingFullDto(book));
-//                }
-//                return bookings;
-//            case "PAST":
-//                for (Booking book : repository.getBookingByUserIdAndFinishAfterNow(booker.getId())) {
-//                    bookings.add(BookingMapper.toBookingFullDto(book));
-//                }
-//                return bookings;
-//            case "REJECTED":
-//                for (Booking book : repository.getByBookerIdAndStatusContainingIgnoreCaseOrderByStartDesc(
-//                        booker.getId(), state)) {
-//                    bookings.add(BookingMapper.toBookingFullDto(book));
-//                }
-//                return bookings;
-//            default:
-//                throw new ValidationException("Unknown state: UNSUPPORTED_STATUS");
-//        }
-//
-//        }
+        BookingState bookState;
+        try {
+            bookState = BookingState.valueOf(state);
+        } catch (IllegalArgumentException e) {
+            throw new ValidationException("Unknown state: " + state);
+        }
         List<BookingFullDto> bookingsDto = new ArrayList<>();
         List<Booking> bookings;
-        switch (state) {
-            case "CURRENT":
+        switch (bookState) {
+            case CURRENT:
                 bookings = repository.getCurrentByUserId(userId);
                 bookings.sort(Comparator.comparing(Booking::getStart));
                 for (Booking book : bookings) {
                     bookingsDto.add(BookingMapper.toBookingFullDto(book));
                 }
                 return bookingsDto;
-            case "PAST": {
+            case PAST:
                 bookings = repository.getBookingByUserIdAndFinishAfterNow(userId);
                 bookings.sort(Comparator.comparing(Booking::getStart).reversed());
                 for (Booking book : bookings) {
                     bookingsDto.add(BookingMapper.toBookingFullDto(book));
                 }
                 return bookingsDto;
-            }
-            case "FUTURE":
+            case FUTURE:
                 List<Booking> bookingsApprove = repository.findByBookerAndStatus(userRepository.getById(userId),
                         BookingStatus.APPROVED);
                 List<Booking> bookingsWaiting = repository.findByBookerAndStatus(userRepository.getById(userId),
@@ -163,7 +123,7 @@ public class BookingServiceDB implements BookingService {
                 }
                 bookingsDto.sort(Comparator.comparing(BookingFullDto::getStart).reversed());
                 return bookingsDto;
-            case "WAITING": {
+            case WAITING:
                 bookings = repository.findByBookerAndStatus(userRepository.getById(userId),
                         BookingStatus.WAITING);
                 bookings.sort(Comparator.comparing(Booking::getStart).reversed());
@@ -171,8 +131,7 @@ public class BookingServiceDB implements BookingService {
                     bookingsDto.add(BookingMapper.toBookingFullDto(book));
                 }
                 return bookingsDto;
-            }
-            case "REJECTED": {
+            case REJECTED:
                 bookings = repository.findByBookerAndStatus(userRepository.getById(userId),
                         BookingStatus.REJECTED);
                 bookings.sort(Comparator.comparing(Booking::getStart).reversed());
@@ -180,15 +139,13 @@ public class BookingServiceDB implements BookingService {
                     bookingsDto.add(BookingMapper.toBookingFullDto(book));
                 }
                 return bookingsDto;
-            }
-            case "ALL": {
+            case ALL:
                 bookings = repository.findByBooker(userRepository.getById(userId));
                 bookings.sort(Comparator.comparing(Booking::getStart).reversed());
                 for (Booking book : bookings) {
                     bookingsDto.add(BookingMapper.toBookingFullDto(book));
                 }
                 return bookingsDto;
-            }
             default:
                 throw new ValidationException("Unknown state: UNSUPPORTED_STATUS");
         }
@@ -199,11 +156,17 @@ public class BookingServiceDB implements BookingService {
         if (userRepository.findById(userId).isEmpty()) {
             throw new NullPointerException("Такого пользователя нет");
         }
+        BookingState bookState;
+        try {
+            bookState = BookingState.valueOf(state);
+        } catch (IllegalArgumentException e) {
+            throw new ValidationException("Unknown state: " + state);
+        }
         List<Item> ownerItems = itemRepository.findAllByOwnerOrderById(userRepository.getById(userId));
         List<BookingFullDto> bookingsDto = new ArrayList<>();
         List<Booking> bookings;
-        switch (state) {
-            case "CURRENT":
+        switch (bookState) {
+            case CURRENT:
                 bookings = repository.findAllByItemInAndStartBeforeAndEndAfterOrderByStartDesc(
                         ownerItems, LocalDateTime.now(), LocalDateTime.now());
                 bookings.sort(Comparator.comparing(Booking::getEnd).reversed());
@@ -211,7 +174,7 @@ public class BookingServiceDB implements BookingService {
                     bookingsDto.add(BookingMapper.toBookingFullDto(book));
                 }
                 return bookingsDto;
-            case "PAST":
+            case PAST:
                 bookings = repository.findAllByItemInAndStatusAndEndBeforeOrderByStartDesc(ownerItems,
                         BookingStatus.APPROVED, LocalDateTime.now());
                 bookings.sort(Comparator.comparing(Booking::getEnd).reversed());
@@ -219,7 +182,7 @@ public class BookingServiceDB implements BookingService {
                     bookingsDto.add(BookingMapper.toBookingFullDto(book));
                 }
                 return bookingsDto;
-            case "FUTURE":
+            case FUTURE:
                 List<Booking> bookingsApprove = repository.findByItemInAndStatus(ownerItems,
                         BookingStatus.APPROVED);
                 List<Booking> bookingsWaiting = repository.findByItemInAndStatus(ownerItems,
@@ -232,7 +195,7 @@ public class BookingServiceDB implements BookingService {
                 }
                 bookingsDto.sort(Comparator.comparing(BookingFullDto::getStart).reversed());
                 return bookingsDto;
-            case "WAITING": {
+            case WAITING:
                 bookings = repository.findByItemInAndStatus(ownerItems,
                         BookingStatus.WAITING);
                 bookings.sort(Comparator.comparing(Booking::getStart).reversed());
@@ -240,8 +203,7 @@ public class BookingServiceDB implements BookingService {
                     bookingsDto.add(BookingMapper.toBookingFullDto(book));
                 }
                 return bookingsDto;
-            }
-            case "REJECTED": {
+            case REJECTED:
                 bookings = repository.findByItemInAndStatus(ownerItems,
                         BookingStatus.REJECTED);
                 bookings.sort(Comparator.comparing(Booking::getStart).reversed());
@@ -249,15 +211,13 @@ public class BookingServiceDB implements BookingService {
                     bookingsDto.add(BookingMapper.toBookingFullDto(book));
                 }
                 return bookingsDto;
-            }
-            case "ALL": {
+            case ALL:
                 bookings = repository.findByItemIn(ownerItems);
                 bookings.sort(Comparator.comparing(Booking::getStart).reversed());
                 for (Booking book : bookings) {
                     bookingsDto.add(BookingMapper.toBookingFullDto(book));
                 }
                 return bookingsDto;
-            }
             default:
                 throw new ValidationException("Unknown state: UNSUPPORTED_STATUS");
         }
