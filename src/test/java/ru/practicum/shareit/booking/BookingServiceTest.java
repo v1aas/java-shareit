@@ -126,8 +126,8 @@ public class BookingServiceTest {
                 user2, BookingStatus.WAITING);
         List<Booking> bookings = Arrays.asList(booking1, booking2);
         Mockito.when(userRepository.findById(1)).thenReturn(Optional.of(new User()));
-        Mockito.when(repository.getCurrentByUserId(Mockito.anyInt(), Mockito.any())).
-                thenReturn(new PageImpl<>(bookings));
+        Mockito.when(repository.getCurrentByUserId(Mockito.anyInt(), Mockito.any()))
+                .thenReturn(new PageImpl<>(bookings));
 
         List<BookingFullDto> expectedResults = bookings.stream()
                 .map(BookingMapper::toBookingFullDto)
@@ -147,8 +147,8 @@ public class BookingServiceTest {
         Page pageList = new PageImpl(ownerItems, PageRequest.of(1, 10), 2);
 
         Mockito.when(userRepository.findById(1)).thenReturn(Optional.of(new User()));
-        Mockito.when(itemRepository.findAllByOwnerOrderById(Mockito.any(), Mockito.any())).
-                thenReturn(pageList);
+        Mockito.when(itemRepository.findAllByOwnerOrderById(Mockito.any(), Mockito.any()))
+                .thenReturn(pageList);
         Mockito.when(repository.findAllByItemInAndStartBeforeAndEndAfterOrderByStartDesc(
                         Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any()))
                 .thenReturn(new PageImpl<>(bookings));

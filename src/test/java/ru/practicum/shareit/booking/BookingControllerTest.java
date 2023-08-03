@@ -123,8 +123,8 @@ public class BookingControllerTest {
         String state = "CURRENT";
         List<BookingFullDto> expectedBookingFullDtos = new ArrayList<>();
 
-        Mockito.when(service.getAllBookingRequestForUser(1, state, 0, 10)).
-                thenReturn(expectedBookingFullDtos);
+        Mockito.when(service.getAllBookingRequestForUser(1, state, 0, 10))
+                .thenReturn(expectedBookingFullDtos);
 
         mvc.perform(MockMvcRequestBuilders.get("/bookings")
                         .contentType(MediaType.APPLICATION_JSON)
@@ -140,8 +140,8 @@ public class BookingControllerTest {
     void testGetAllBookingRequestForOwner() throws Exception {
         String state = "CURRENT";
         List<BookingFullDto> expectedBookingFullDtos = new ArrayList<>();
-        Mockito.when(service.getAllBookingRequestForOwner(1, state, 0, 10)).
-                thenReturn(expectedBookingFullDtos);
+        Mockito.when(service.getAllBookingRequestForOwner(1, state, 0, 10))
+                .thenReturn(expectedBookingFullDtos);
 
         mvc.perform(MockMvcRequestBuilders.get("/bookings/owner")
                         .contentType(MediaType.APPLICATION_JSON)

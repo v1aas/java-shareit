@@ -109,8 +109,8 @@ public class UserControllerTest {
                 .andExpect(MockMvcResultMatchers.status().isOk())
                 .andExpect(MockMvcResultMatchers.jsonPath("$.id").value(1))
                 .andExpect(MockMvcResultMatchers.jsonPath("$.name").value("Updated Testman"))
-                .andExpect(MockMvcResultMatchers.jsonPath("$.email").
-                        value("uptestman12@test.com"));
+                .andExpect(MockMvcResultMatchers.jsonPath("$.email")
+                        .value("uptestman12@test.com"));
     }
 
     @Test

@@ -96,8 +96,7 @@ public class ItemServiceDBTest {
         userRepository.save(user2);
         Page pageList = new PageImpl(List.of(item1), PageRequest.of(1, 10), 2);
         Mockito.when(userRepository.getById(1)).thenReturn(user1);
-        Mockito.when(repository.findAllByOwnerOrderById(user1, PageRequest.of(1, 10))).
-                thenReturn(pageList);
+        Mockito.when(repository.findAllByOwnerOrderById(user1, PageRequest.of(1, 10))).thenReturn(pageList);
 
         List<ItemDto> result = service.getItems(1, 1, 10);
         assertNotNull(result);
