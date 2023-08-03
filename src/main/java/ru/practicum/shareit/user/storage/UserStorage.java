@@ -60,7 +60,7 @@ public class UserStorage {
 
     private void repeatedEmailValidation(User user) {
         for (User us : userMap.values()) {
-            if (user.getId() == us.getId()) {
+            if (user.getId().equals(us.getId())) {
                 continue;
             }
             if (us.getEmail().equals(user.getEmail())) {

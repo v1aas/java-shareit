@@ -60,7 +60,7 @@ public class ItemRequestServiceDB implements ItemRequestService {
         List<ItemRequestDto> requests = new ArrayList<>();
         for (ItemRequest request : repository.findAll(PageRequest.of(from, size,
                 Sort.by(Sort.Direction.ASC, "created"))).toList()) {
-            if (userId == request.getRequestorId()) {
+            if (userId.equals(request.getRequestorId())) {
                 continue;
             }
             request.setItems(itemRepository.findByRequestId(request.getId()));
