@@ -1,6 +1,7 @@
 package ru.practicum.shareit.item.service;
 
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 import ru.practicum.shareit.booking.mapper.BookingMapper;
 import ru.practicum.shareit.booking.model.Booking;
@@ -54,10 +55,11 @@ public class ItemServiceDB implements ItemService {
     }
 
     @Override
-    public List<ItemDto> getItems(int ownerId) {
+    public List<ItemDto> getItems(int ownerId, int from, int size) {
         ArrayList<ItemDto> items = new ArrayList<>();
         List<CommentDto> commentsByItem = new ArrayList<>();
-        for (Item item : repository.findAllByOwnerOrderById(userRepository.getById(ownerId))) {
+        for (Item item : repository.findAllByOwnerOrderById(userRepository.getById(ownerId),
+                PageRequest.of(from, size))) {
             ItemDto itemDto = ItemMapper.toItemDto(item);
             if (getLastBookingByItem(item) != null) {
                 itemDto.setLastBooking(BookingMapper.toBookingDto(getLastBookingByItem(item)));
@@ -87,6 +89,9 @@ public class ItemServiceDB implements ItemService {
         newItem.setDescription(item.getDescription());
         newItem.setAvailable(item.getAvailable());
         newItem.setOwner(userRepository.getById(ownerId));
+        if (item.getRequestId() != null) {
+            newItem.setRequestId(item.getRequestId());
+        }
         return ItemMapper.toItemDto(repository.save(newItem));
     }
 
@@ -118,11 +123,11 @@ public class ItemServiceDB implements ItemService {
     }
 
     @Override
-    public List<ItemDto> searchItem(String text) {
+    public List<ItemDto> searchItem(String text, int from, int size) {
         if (text == null || text.isEmpty()) {
             return new ArrayList<>();
         }
-        List<Item> items = repository.searchItems(text);
+        List<Item> items = repository.searchItems(text, PageRequest.of(from, size)).toList();
         List<ItemDto> itemsDto = new ArrayList<>();
         for (Item item : items) {
             itemsDto.add(ItemMapper.toItemDto(item));

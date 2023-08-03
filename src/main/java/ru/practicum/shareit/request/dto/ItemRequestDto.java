@@ -3,20 +3,17 @@ package ru.practicum.shareit.request.dto;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import ru.practicum.shareit.booking.model.BookingStatus;
-import ru.practicum.shareit.item.dto.ItemDto;
-import ru.practicum.shareit.user.dto.UserDto;
+import ru.practicum.shareit.item.model.Item;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
 public class ItemRequestDto {
     private int id;
-    private LocalDateTime start;
-    private LocalDateTime end;
-    private ItemDto itemDto;
-    private UserDto bookerDto;
-    private BookingStatus status;
+    private String description;
+    private LocalDateTime created;
+    private List<Item> items;
 }
