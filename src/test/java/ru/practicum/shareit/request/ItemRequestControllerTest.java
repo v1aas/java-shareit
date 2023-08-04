@@ -119,8 +119,8 @@ public class ItemRequestControllerTest {
         requestDto.setCreated(LocalDateTime.now());
         requestDto.setDescription("Some description");
 
-        Mockito.when(service.postRequest(100, requestDto)).
-                thenThrow(new NullPointerException("Такого пользователя не существует!"));
+        Mockito.when(service.postRequest(100, requestDto))
+                .thenThrow(new NullPointerException("Такого пользователя не существует!"));
 
         mvc.perform(post("/requests")
                         .contentType(MediaType.APPLICATION_JSON)
@@ -135,8 +135,8 @@ public class ItemRequestControllerTest {
         requestDto.setId(1);
         requestDto.setDescription("");
 
-        Mockito.when(service.postRequest(1, requestDto)).
-                thenThrow(new ValidationException("Описание не может быть пустым"));
+        Mockito.when(service.postRequest(1, requestDto))
+                .thenThrow(new ValidationException("Описание не может быть пустым"));
 
         mvc.perform(post("/requests")
                         .contentType(MediaType.APPLICATION_JSON)
