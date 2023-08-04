@@ -9,7 +9,6 @@ import ru.practicum.shareit.booking.service.BookingService;
 import ru.practicum.shareit.exception.ValidationException;
 import ru.practicum.shareit.exception.error.ErrorResponse;
 
-import javax.persistence.EntityNotFoundException;
 import java.util.List;
 
 @RestController
@@ -64,12 +63,6 @@ public class BookingController {
     @ExceptionHandler
     @ResponseStatus(HttpStatus.NOT_FOUND)
     public ErrorResponse nullExp(final NullPointerException e) {
-        return new ErrorResponse(e.getMessage());
-    }
-
-    @ExceptionHandler
-    @ResponseStatus(HttpStatus.NOT_FOUND)
-    public ErrorResponse entityNotFoundExp(final EntityNotFoundException e) {
         return new ErrorResponse(e.getMessage());
     }
 }

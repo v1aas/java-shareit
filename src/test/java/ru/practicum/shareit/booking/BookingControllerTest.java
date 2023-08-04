@@ -21,6 +21,7 @@ import ru.practicum.shareit.booking.mapper.BookingMapper;
 import ru.practicum.shareit.booking.model.Booking;
 import ru.practicum.shareit.booking.model.BookingStatus;
 import ru.practicum.shareit.booking.service.BookingService;
+import ru.practicum.shareit.exception.ValidationException;
 import ru.practicum.shareit.item.comment.Comment;
 import ru.practicum.shareit.item.model.Item;
 import ru.practicum.shareit.user.model.User;
@@ -151,5 +152,31 @@ public class BookingControllerTest {
                         .param("size", String.valueOf(10)))
                 .andExpect(MockMvcResultMatchers.status().isOk())
                 .andExpect(MockMvcResultMatchers.content().json(mapper.writeValueAsString(expectedBookingFullDtos)));
+    }
+
+    @Test
+    void testValidationException() throws Exception {
+        ValidationException validationException = new ValidationException("Неправильные данные!");
+        booking1.setStatus(BookingStatus.APPROVED);
+        Mockito.when(service.postApproveBooking(1, 2, true)).thenThrow(validationException);
+
+        mvc.perform(MockMvcRequestBuilders.patch("/bookings/{bookingId}", 1)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .header("X-Sharer-User-Id", 2)
+                        .param("approved", String.valueOf(true)))
+                .andExpect(MockMvcResultMatchers.status().isBadRequest());
+    }
+
+    @Test
+    void testNullPointerException() throws Exception {
+        NullPointerException nullPointerException =
+                new NullPointerException("Менять статус бронирования может только владелец");
+        Mockito.when(service.postApproveBooking(1, 2, true)).thenThrow(nullPointerException);
+
+        mvc.perform(MockMvcRequestBuilders.patch("/bookings/{bookingId}", 1)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .header("X-Sharer-User-Id", 2)
+                        .param("approved", String.valueOf(true)))
+                .andExpect(MockMvcResultMatchers.status().isNotFound());
     }
 }

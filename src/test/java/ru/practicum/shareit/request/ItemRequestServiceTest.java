@@ -10,6 +10,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import ru.practicum.shareit.booking.model.Booking;
+import ru.practicum.shareit.exception.ValidationException;
 import ru.practicum.shareit.item.comment.Comment;
 import ru.practicum.shareit.item.model.Item;
 import ru.practicum.shareit.item.repository.ItemRepository;
@@ -26,8 +27,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.*;
 
 @ExtendWith(MockitoExtension.class)
 public class ItemRequestServiceTest {
@@ -165,5 +165,23 @@ public class ItemRequestServiceTest {
 
         assertNotNull(result);
         assertEquals(request.getDescription(), result.getDescription());
+    }
+
+    @Test
+    void testPostRequestUserIdNull() {
+        Integer userId = null;
+        ItemRequestDto requestDto = new ItemRequestDto();
+        requestDto.setDescription("Test description");
+
+        assertThrows(NullPointerException.class, () -> service.postRequest(userId, requestDto));
+    }
+
+    @Test
+    void testPostRequestDescriptionNull() {
+        ItemRequestDto requestDto = new ItemRequestDto();
+        requestDto.setDescription(null);
+        Mockito.when(userRepository.findById(Mockito.anyInt())).thenReturn(Optional.of(user1));
+
+        assertThrows(ValidationException.class, () -> service.postRequest(10, requestDto));
     }
 }

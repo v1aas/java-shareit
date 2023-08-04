@@ -12,6 +12,7 @@ import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
+import ru.practicum.shareit.exception.ValidationException;
 import ru.practicum.shareit.item.comment.Comment;
 import ru.practicum.shareit.item.controller.ItemController;
 import ru.practicum.shareit.item.dto.CommentDto;
@@ -147,5 +148,31 @@ public class ItemControllerTest {
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(mapper.writeValueAsString(commentDto)))
                 .andExpect(MockMvcResultMatchers.status().isOk());
+    }
+
+    @Test
+    void testHandleValidationException() throws Exception {
+        ItemDto wrongItem = ItemMapper.toItemDto(item1);
+        wrongItem.setDescription(null);
+        ValidationException validationException = new ValidationException("Нужно заполнить все поля!");
+        Mockito.when(service.postItem(Mockito.anyInt(), Mockito.any())).thenThrow(validationException);
+
+        mvc.perform(post("/items")
+                        .header("X-Sharer-User-Id", String.valueOf(1))
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(mapper.writeValueAsString(wrongItem)))
+                .andExpect(MockMvcResultMatchers.status().isBadRequest());
+    }
+
+    @Test
+    void testHandleNullPointerException() throws Exception {
+        NullPointerException nullPointerException = new NullPointerException("Такого пользователя не существует!");
+        Mockito.when(service.postItem(Mockito.anyInt(), Mockito.any())).thenThrow(nullPointerException);
+
+        mvc.perform(post("/items")
+                        .header("X-Sharer-User-Id", String.valueOf(999))
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(mapper.writeValueAsString(item1)))
+                .andExpect(MockMvcResultMatchers.status().isNotFound());
     }
 }

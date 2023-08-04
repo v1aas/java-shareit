@@ -61,7 +61,6 @@ public class BookingServiceDB implements BookingService {
         if (repository.getById(bookingId).getItem().getOwner().getId() != userId) {
             throw new NullPointerException("Менять статус бронирования может только владелец");
         }
-        // TODO исправлено
         if (repository.getById(bookingId).getStatus().equals(BookingStatus.APPROVED)) {
             throw new ValidationException("Статус уже подтвержден!");
         }

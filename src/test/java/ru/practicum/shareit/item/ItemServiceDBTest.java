@@ -13,6 +13,7 @@ import org.springframework.data.domain.PageRequest;
 import ru.practicum.shareit.booking.model.Booking;
 import ru.practicum.shareit.booking.model.BookingStatus;
 import ru.practicum.shareit.booking.repository.BookingRepository;
+import ru.practicum.shareit.exception.ResourceNotFoundException;
 import ru.practicum.shareit.item.comment.Comment;
 import ru.practicum.shareit.item.dto.CommentDto;
 import ru.practicum.shareit.item.dto.ItemDto;
@@ -30,8 +31,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.*;
 
 @ExtendWith(MockitoExtension.class)
 public class ItemServiceDBTest {
@@ -174,5 +174,47 @@ public class ItemServiceDBTest {
         CommentDto result = service.postComment(1, 1, commentDto);
         assertNotNull(result);
         assertEquals(commentDto.getText(), result.getText());
+    }
+
+    @Test
+    void testPatchItemResourceNotFoundException() {
+        int ownerId = 1;
+        int itemId = 123;
+        ItemDto itemDto = new ItemDto();
+        itemDto.setName("New Item Name");
+
+        Mockito.when(repository.getOwnerById(itemId)).thenReturn(user1);
+        Mockito.when(repository.findById(itemId)).thenReturn(Optional.empty());
+
+        ResourceNotFoundException exception = assertThrows(ResourceNotFoundException.class,
+                () -> service.patchItem(ownerId, itemId, itemDto));
+        assertEquals("Такой вещи не существует", exception.getMessage());
+    }
+
+    @Test
+    void testPatchItemOwnerIsWrong() {
+        ItemDto itemDto = new ItemDto();
+        itemDto.setName("Updated Item");
+        itemDto.setDescription("Updated Description");
+
+        Item existingItem = new Item();
+        existingItem.setId(2);
+        existingItem.setOwner(new User(3, "Testwoman", "@mail.com"));
+
+        Mockito.when(repository.getOwnerById(2)).thenReturn(existingItem.getOwner());
+
+        assertThrows(NullPointerException.class, () -> service.patchItem(1, 2, itemDto));
+    }
+
+    @Test
+    void testPatchItemNotFound() {
+        ItemDto itemDto = new ItemDto();
+        itemDto.setName("Updated Item");
+        itemDto.setDescription("Updated Description");
+
+        Mockito.when(repository.getOwnerById(2)).thenReturn(user1);
+        Mockito.when(repository.findById(2)).thenReturn(Optional.empty());
+
+        assertThrows(ResourceNotFoundException.class, () -> service.patchItem(1, 2, itemDto));
     }
 }

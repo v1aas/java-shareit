@@ -6,6 +6,7 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
+import ru.practicum.shareit.exception.ValidationException;
 import ru.practicum.shareit.user.dto.UserDto;
 import ru.practicum.shareit.user.mapper.UserMapper;
 import ru.practicum.shareit.user.model.User;
@@ -16,8 +17,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.*;
 
 @ExtendWith(MockitoExtension.class)
 public class UserServiceDBTest {
@@ -101,5 +101,23 @@ public class UserServiceDBTest {
         assertEquals(userToDelete.getName(), result.getName());
         assertEquals(userToDelete.getEmail(), result.getEmail());
         Mockito.verify(repository, Mockito.times(1)).deleteById(userId);
+    }
+
+    @Test
+    void testPostUserValidationException() {
+        UserDto userDto = new UserDto();
+
+        ValidationException exception = assertThrows(ValidationException.class, () -> service.postUser(userDto));
+        assertEquals("Нужно заполнить все поля!", exception.getMessage());
+    }
+
+    @Test
+    void testPostUser_ValidationException_InvalidEmail() {
+        UserDto userDto = new UserDto();
+        userDto.setName("John Doe");
+        userDto.setEmail("invalidemail.com");
+
+        ValidationException exception = assertThrows(ValidationException.class, () -> service.postUser(userDto));
+        assertEquals("Почта некорректна", exception.getMessage());
     }
 }
