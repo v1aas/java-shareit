@@ -184,4 +184,40 @@ public class ItemRequestServiceTest {
 
         assertThrows(ValidationException.class, () -> service.postRequest(10, requestDto));
     }
+
+    @Test
+    void testGetRequestWithInvalidUserId() {
+        Integer invalidUserId = -1;
+        assertThrows(NullPointerException.class, () -> service.getRequest(invalidUserId));
+    }
+
+    @Test
+    void testGetAllRequestWithInvalidSize() {
+        Integer userId = 1;
+        Integer from = 0;
+        Integer invalidSize = -1;
+        assertThrows(ValidationException.class, () -> service.getAllRequest(userId, from, invalidSize));
+    }
+
+    @Test
+    void testGetAllRequestWithInvalidFrom() {
+        Integer userId = 1;
+        Integer invalidFrom = 2;
+        Integer size = 1;
+        assertThrows(ValidationException.class, () -> service.getAllRequest(userId, invalidFrom, size));
+    }
+
+    @Test
+    void testGetRequestByIdWithInvalidRequestId() {
+        Integer invalidRequestId = -1;
+        Integer userId = 1;
+        assertThrows(NullPointerException.class, () -> service.getRequestById(invalidRequestId, userId));
+    }
+
+    @Test
+    void testGetRequestByIdWithInvalidUserId() {
+        Integer requestId = 1;
+        Integer invalidUserId = -1;
+        assertThrows(NullPointerException.class, () -> service.getRequestById(requestId, invalidUserId));
+    }
 }

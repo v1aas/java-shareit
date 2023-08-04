@@ -13,10 +13,12 @@ import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
+import ru.practicum.shareit.exception.ValidationException;
 import ru.practicum.shareit.request.contorller.ItemRequestController;
 import ru.practicum.shareit.request.dto.ItemRequestDto;
 import ru.practicum.shareit.request.service.ItemRequestService;
 
+import java.time.LocalDateTime;
 import java.util.Arrays;
 import java.util.List;
 
@@ -108,5 +110,38 @@ public class ItemRequestControllerTest {
                         .header("X-Sharer-User-Id", String.valueOf(1)))
                 .andExpect(MockMvcResultMatchers.status().isOk())
                 .andExpect(MockMvcResultMatchers.content().json(mapper.writeValueAsString(expectedResponse)));
+    }
+
+    @Test
+    public void testPostRequestWithInvalidUser() throws Exception {
+        ItemRequestDto requestDto = new ItemRequestDto();
+        requestDto.setId(1);
+        requestDto.setCreated(LocalDateTime.now());
+        requestDto.setDescription("Some description");
+
+        Mockito.when(service.postRequest(100, requestDto)).
+                thenThrow(new NullPointerException("Такого пользователя не существует!"));
+
+        mvc.perform(post("/requests")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .header("X-Sharer-User-Id", String.valueOf(100))
+                        .content(mapper.writeValueAsString(requestDto)))
+                .andExpect(MockMvcResultMatchers.status().isNotFound());
+    }
+
+    @Test
+    public void testPostRequestWithEmptyDescription() throws Exception {
+        ItemRequestDto requestDto = new ItemRequestDto();
+        requestDto.setId(1);
+        requestDto.setDescription("");
+
+        Mockito.when(service.postRequest(1, requestDto)).
+                thenThrow(new ValidationException("Описание не может быть пустым"));
+
+        mvc.perform(post("/requests")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .header("X-Sharer-User-Id", String.valueOf(1))
+                        .content(new ObjectMapper().writeValueAsString(requestDto)))
+                .andExpect(MockMvcResultMatchers.status().isBadRequest());
     }
 }

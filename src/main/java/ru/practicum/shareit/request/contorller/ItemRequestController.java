@@ -8,7 +8,6 @@ import ru.practicum.shareit.exception.error.ErrorResponse;
 import ru.practicum.shareit.request.dto.ItemRequestDto;
 import ru.practicum.shareit.request.service.ItemRequestService;
 
-import javax.persistence.EntityNotFoundException;
 import java.util.List;
 
 @RestController
@@ -50,12 +49,6 @@ public class ItemRequestController {
     @ExceptionHandler
     @ResponseStatus(HttpStatus.NOT_FOUND)
     public ErrorResponse nullExp(final NullPointerException e) {
-        return new ErrorResponse(e.getMessage());
-    }
-
-    @ExceptionHandler
-    @ResponseStatus(HttpStatus.NOT_FOUND)
-    public ErrorResponse entityNotFoundExp(final EntityNotFoundException e) {
         return new ErrorResponse(e.getMessage());
     }
 }

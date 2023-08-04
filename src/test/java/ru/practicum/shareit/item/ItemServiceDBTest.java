@@ -28,6 +28,7 @@ import ru.practicum.shareit.user.repository.UserRepository;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 
@@ -216,5 +217,46 @@ public class ItemServiceDBTest {
         Mockito.when(repository.findById(2)).thenReturn(Optional.empty());
 
         assertThrows(ResourceNotFoundException.class, () -> service.patchItem(1, 2, itemDto));
+    }
+
+    @Test
+    public void testGetItemWithBookingsAndComments() {
+        Comment comment2 = new Comment();
+        comment2.setId(2);
+        comment2.setText("Comment 2");
+        comment2.setAuthor(user2);
+
+        Booking booking = new Booking();
+        booking.setId(1);
+        booking.setBooker(user1);
+        booking.setStart(comment.getCreated().plusDays(2));
+        booking.setEnd(comment.getCreated().plusDays(3));
+        booking.setItem(item1);
+
+        List<Comment> comments = Arrays.asList(comment, comment2);
+
+        Mockito.when(repository.getById(1)).thenReturn(item1);
+        Mockito.when(commentRepository.findAllByItem(item1)).thenReturn(comments);
+        Mockito.when(bookingRepository.findFirstByItemAndStatusAndStartAfterOrderByStart(Mockito.eq(item1),
+                Mockito.eq(BookingStatus.APPROVED), Mockito.any())).thenReturn(booking);
+        Mockito.when(bookingRepository.findFirstByItemAndStatusAndStartBeforeOrderByStartDesc(Mockito.eq(item1),
+                Mockito.eq(BookingStatus.APPROVED), Mockito.any())).thenReturn(null);
+
+        ItemDto result = service.getItem(1, 1);
+
+        assertNotNull(result);
+        assertEquals(item1.getId(), result.getId());
+        assertEquals(item1.getName(), result.getName());
+        assertEquals(item1.getDescription(), result.getDescription());
+
+        assertEquals(booking.getId(), result.getNextBooking().getId());
+        assertEquals(booking.getStart(), result.getNextBooking().getStart());
+        assertEquals(booking.getEnd(), result.getNextBooking().getEnd());
+
+        assertEquals(comments.size(), result.getComments().size());
+        assertEquals(comments.get(0).getId(), result.getComments().get(0).getId());
+        assertEquals(comments.get(0).getText(), result.getComments().get(0).getText());
+        assertEquals(comments.get(1).getId(), result.getComments().get(1).getId());
+        assertEquals(comments.get(1).getText(), result.getComments().get(1).getText());
     }
 }
