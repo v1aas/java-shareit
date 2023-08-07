@@ -102,14 +102,14 @@ public class BookingServiceDB implements BookingService {
         List<Booking> bookings;
         switch (bookState) {
             case CURRENT:
-                bookings = repository.getCurrentByUserId(userId, PageRequest.of(from / size, size,
+                bookings = repository.getCurrentByUserId(userId, getPage(from, size,
                         Sort.by(Sort.Direction.ASC, "start"))).getContent();
                 for (Booking book : bookings) {
                     bookingsDto.add(BookingMapper.toBookingFullDto(book));
                 }
                 return bookingsDto;
             case PAST:
-                bookings = repository.getBookingByUserIdAndFinishAfterNow(userId, PageRequest.of(from / size, size,
+                bookings = repository.getBookingByUserIdAndFinishAfterNow(userId, getPage(from, size,
                         Sort.by(Sort.Direction.DESC, "start"))).getContent();
                 for (Booking book : bookings) {
                     bookingsDto.add(BookingMapper.toBookingFullDto(book));
@@ -117,9 +117,9 @@ public class BookingServiceDB implements BookingService {
                 return bookingsDto;
             case FUTURE:
                 List<Booking> bookingsApprove = repository.findByBookerAndStatus(userRepository.getById(userId),
-                        BookingStatus.APPROVED, PageRequest.of(from / size, size)).getContent();
+                        BookingStatus.APPROVED, getPage(from, size)).getContent();
                 List<Booking> bookingsWaiting = repository.findByBookerAndStatus(userRepository.getById(userId),
-                        BookingStatus.WAITING, PageRequest.of(from / size, size)).getContent();
+                        BookingStatus.WAITING, getPage(from, size)).getContent();
                 for (Booking book : bookingsApprove) {
                     bookingsDto.add(BookingMapper.toBookingFullDto(book));
                 }
@@ -130,7 +130,7 @@ public class BookingServiceDB implements BookingService {
                 return bookingsDto;
             case WAITING:
                 bookings = repository.findByBookerAndStatus(userRepository.getById(userId),
-                        BookingStatus.WAITING, PageRequest.of(from / size, size,
+                        BookingStatus.WAITING, getPage(from, size,
                                 Sort.by(Sort.Direction.DESC, "start"))).getContent();
                 for (Booking book : bookings) {
                     bookingsDto.add(BookingMapper.toBookingFullDto(book));
@@ -138,15 +138,15 @@ public class BookingServiceDB implements BookingService {
                 return bookingsDto;
             case REJECTED:
                 bookings = repository.findByBookerAndStatus(userRepository.getById(userId),
-                        BookingStatus.REJECTED, PageRequest.of(from / size, size,
+                        BookingStatus.REJECTED, getPage(from, size,
                                 Sort.by(Sort.Direction.DESC, "start"))).getContent();
                 for (Booking book : bookings) {
                     bookingsDto.add(BookingMapper.toBookingFullDto(book));
                 }
                 return bookingsDto;
             case ALL:
-                bookings = repository.findByBooker(userRepository.getById(userId), PageRequest.of(from / size,
-                        size, Sort.by(Sort.Direction.DESC, "start"))).getContent();
+                bookings = repository.findByBooker(userRepository.getById(userId), getPage(from, size,
+                        Sort.by(Sort.Direction.DESC, "start"))).getContent();
                 for (Booking book : bookings) {
                     bookingsDto.add(BookingMapper.toBookingFullDto(book));
                 }
@@ -170,14 +170,15 @@ public class BookingServiceDB implements BookingService {
         } catch (IllegalArgumentException e) {
             throw new ValidationException("Unknown state: " + state);
         }
+        // Здесь должны быть 0 и 10, так как этот лист не относится к букингу
         List<Item> ownerItems = itemRepository.findAllByOwnerOrderById(userRepository.getById(userId),
-                PageRequest.of(0, 10)).toList();
+                getPage(0, 10)).toList();
         List<BookingFullDto> bookingsDto = new ArrayList<>();
         List<Booking> bookings;
         switch (bookState) {
             case CURRENT:
                 bookings = repository.findAllByItemInAndStartBeforeAndEndAfterOrderByStartDesc(
-                        ownerItems, LocalDateTime.now(), LocalDateTime.now(), PageRequest.of(from / size, size,
+                        ownerItems, LocalDateTime.now(), LocalDateTime.now(), getPage(from, size,
                                 Sort.by(Sort.Direction.DESC, "start"))).getContent();
                 for (Booking book : bookings) {
                     bookingsDto.add(BookingMapper.toBookingFullDto(book));
@@ -185,7 +186,7 @@ public class BookingServiceDB implements BookingService {
                 return bookingsDto;
             case PAST:
                 bookings = repository.findAllByItemInAndStatusAndEndBeforeOrderByStartDesc(ownerItems,
-                        BookingStatus.APPROVED, LocalDateTime.now(), PageRequest.of(from / size, size,
+                        BookingStatus.APPROVED, LocalDateTime.now(), getPage(from, size,
                                 Sort.by(Sort.Direction.ASC, "start"))).getContent();
                 for (Booking book : bookings) {
                     bookingsDto.add(BookingMapper.toBookingFullDto(book));
@@ -193,9 +194,9 @@ public class BookingServiceDB implements BookingService {
                 return bookingsDto;
             case FUTURE:
                 List<Booking> bookingsApprove = repository.findByItemInAndStatus(ownerItems,
-                        BookingStatus.APPROVED, PageRequest.of(from / size, size)).getContent();
+                        BookingStatus.APPROVED, getPage(from, size)).getContent();
                 List<Booking> bookingsWaiting = repository.findByItemInAndStatus(ownerItems,
-                        BookingStatus.WAITING, PageRequest.of(from / size, size)).getContent();
+                        BookingStatus.WAITING, getPage(from, size)).getContent();
                 for (Booking book : bookingsApprove) {
                     bookingsDto.add(BookingMapper.toBookingFullDto(book));
                 }
@@ -206,7 +207,7 @@ public class BookingServiceDB implements BookingService {
                 return bookingsDto;
             case WAITING:
                 bookings = repository.findByItemInAndStatus(ownerItems,
-                        BookingStatus.WAITING, PageRequest.of(from / size, size,
+                        BookingStatus.WAITING, getPage(from, size,
                                 Sort.by(Sort.Direction.DESC, "start"))).getContent();
                 for (Booking book : bookings) {
                     bookingsDto.add(BookingMapper.toBookingFullDto(book));
@@ -214,7 +215,7 @@ public class BookingServiceDB implements BookingService {
                 return bookingsDto;
             case REJECTED:
                 bookings = repository.findByItemInAndStatus(ownerItems,
-                        BookingStatus.REJECTED, PageRequest.of(from / size, size,
+                        BookingStatus.REJECTED, getPage(from, size,
                                 Sort.by(Sort.Direction.DESC, "start"))).getContent();
                 for (Booking book : bookings) {
                     bookingsDto.add(BookingMapper.toBookingFullDto(book));
@@ -230,5 +231,13 @@ public class BookingServiceDB implements BookingService {
             default:
                 throw new ValidationException("Unknown state: UNSUPPORTED_STATUS");
         }
+    }
+
+    private PageRequest getPage(int from, int size, Sort sort) {
+        return PageRequest.of(from / size, size, sort);
+    }
+
+    private PageRequest getPage(int from, int size) {
+        return PageRequest.of(from / size, size);
     }
 }
