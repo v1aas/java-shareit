@@ -20,7 +20,7 @@ public class BookingController {
     private final BookingService bookingService;
 
     @PostMapping
-    public BookingFullDto postReqeust(@RequestHeader("X-Sharer-User-Id") int userId,
+    public BookingFullDto postRequest(@RequestHeader("X-Sharer-User-Id") int userId,
                                       @RequestBody BookingDto bookingDto) {
         return bookingService.postRequest(userId, bookingDto);
     }
@@ -39,14 +39,20 @@ public class BookingController {
 
     @GetMapping
     public List<BookingFullDto> getAllBookingRequestForUser(@RequestHeader("X-Sharer-User-Id") int userId,
-                                                            @RequestParam(defaultValue = "ALL") String state) {
-        return bookingService.getAllBookingRequestForUser(userId, state);
+                                                            @RequestParam(defaultValue = "ALL") String state,
+                                                            @RequestParam(value = "from", defaultValue = "0") int from,
+                                                            @RequestParam(value = "size", defaultValue = "10")
+                                                            int size) {
+        return bookingService.getAllBookingRequestForUser(userId, state, from, size);
     }
 
     @GetMapping("/owner")
     public List<BookingFullDto> getAllBookingRequestForOwner(@RequestHeader("X-Sharer-User-Id") int userId,
-                                                             @RequestParam(defaultValue = "ALL") String state) {
-        return bookingService.getAllBookingRequestForOwner(userId, state);
+                                                             @RequestParam(defaultValue = "ALL") String state,
+                                                             @RequestParam(value = "from", defaultValue = "0") int from,
+                                                             @RequestParam(value = "size", defaultValue = "10")
+                                                             int size) {
+        return bookingService.getAllBookingRequestForOwner(userId, state, from, size);
     }
 
     @ExceptionHandler

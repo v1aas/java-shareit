@@ -67,10 +67,6 @@ public class UserServiceDB implements UserService {
     }
 
     private boolean isValidEmail(String email) {
-        if (email.contains("@")) {
-            return true;
-        } else {
-            return false;
-        }
+        return email.contains("@");
     }
 }

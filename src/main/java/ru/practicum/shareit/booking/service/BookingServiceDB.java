@@ -1,6 +1,8 @@
 package ru.practicum.shareit.booking.service;
 
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import ru.practicum.shareit.booking.dto.BookingDto;
 import ru.practicum.shareit.booking.dto.BookingFullDto;
@@ -59,7 +61,7 @@ public class BookingServiceDB implements BookingService {
         if (repository.getById(bookingId).getItem().getOwner().getId() != userId) {
             throw new NullPointerException("Менять статус бронирования может только владелец");
         }
-        if (repository.getReferenceById(bookingId).getStatus().equals(BookingStatus.APPROVED)) {
+        if (repository.getById(bookingId).getStatus().equals(BookingStatus.APPROVED)) {
             throw new ValidationException("Статус уже подтвержден!");
         }
         Booking book = repository.getById(bookingId);
@@ -83,9 +85,12 @@ public class BookingServiceDB implements BookingService {
     }
 
     @Override
-    public List<BookingFullDto> getAllBookingRequestForUser(int userId, String state) {
+    public List<BookingFullDto> getAllBookingRequestForUser(int userId, String state, int from, int size) {
         if (userRepository.findById(userId).isEmpty()) {
             throw new NullPointerException("Такого пользователя нет");
+        }
+        if (from < 0 || size < 0 || size == 0) {
+            throw new ValidationException("Неправильно указаны размеры!");
         }
         BookingState bookState;
         try {
@@ -97,24 +102,24 @@ public class BookingServiceDB implements BookingService {
         List<Booking> bookings;
         switch (bookState) {
             case CURRENT:
-                bookings = repository.getCurrentByUserId(userId);
-                bookings.sort(Comparator.comparing(Booking::getStart));
+                bookings = repository.getCurrentByUserId(userId, getPage(from, size,
+                        Sort.by(Sort.Direction.ASC, "start"))).getContent();
                 for (Booking book : bookings) {
                     bookingsDto.add(BookingMapper.toBookingFullDto(book));
                 }
                 return bookingsDto;
             case PAST:
-                bookings = repository.getBookingByUserIdAndFinishAfterNow(userId);
-                bookings.sort(Comparator.comparing(Booking::getStart).reversed());
+                bookings = repository.getBookingByUserIdAndFinishAfterNow(userId, getPage(from, size,
+                        Sort.by(Sort.Direction.DESC, "start"))).getContent();
                 for (Booking book : bookings) {
                     bookingsDto.add(BookingMapper.toBookingFullDto(book));
                 }
                 return bookingsDto;
             case FUTURE:
                 List<Booking> bookingsApprove = repository.findByBookerAndStatus(userRepository.getById(userId),
-                        BookingStatus.APPROVED);
+                        BookingStatus.APPROVED, getPage(from, size)).getContent();
                 List<Booking> bookingsWaiting = repository.findByBookerAndStatus(userRepository.getById(userId),
-                        BookingStatus.WAITING);
+                        BookingStatus.WAITING, getPage(from, size)).getContent();
                 for (Booking book : bookingsApprove) {
                     bookingsDto.add(BookingMapper.toBookingFullDto(book));
                 }
@@ -125,23 +130,23 @@ public class BookingServiceDB implements BookingService {
                 return bookingsDto;
             case WAITING:
                 bookings = repository.findByBookerAndStatus(userRepository.getById(userId),
-                        BookingStatus.WAITING);
-                bookings.sort(Comparator.comparing(Booking::getStart).reversed());
+                        BookingStatus.WAITING, getPage(from, size,
+                                Sort.by(Sort.Direction.DESC, "start"))).getContent();
                 for (Booking book : bookings) {
                     bookingsDto.add(BookingMapper.toBookingFullDto(book));
                 }
                 return bookingsDto;
             case REJECTED:
                 bookings = repository.findByBookerAndStatus(userRepository.getById(userId),
-                        BookingStatus.REJECTED);
-                bookings.sort(Comparator.comparing(Booking::getStart).reversed());
+                        BookingStatus.REJECTED, getPage(from, size,
+                                Sort.by(Sort.Direction.DESC, "start"))).getContent();
                 for (Booking book : bookings) {
                     bookingsDto.add(BookingMapper.toBookingFullDto(book));
                 }
                 return bookingsDto;
             case ALL:
-                bookings = repository.findByBooker(userRepository.getById(userId));
-                bookings.sort(Comparator.comparing(Booking::getStart).reversed());
+                bookings = repository.findByBooker(userRepository.getById(userId), getPage(from, size,
+                        Sort.by(Sort.Direction.DESC, "start"))).getContent();
                 for (Booking book : bookings) {
                     bookingsDto.add(BookingMapper.toBookingFullDto(book));
                 }
@@ -152,9 +157,12 @@ public class BookingServiceDB implements BookingService {
     }
 
     @Override
-    public List<BookingFullDto> getAllBookingRequestForOwner(int userId, String state) {
+    public List<BookingFullDto> getAllBookingRequestForOwner(int userId, String state, int from, int size) {
         if (userRepository.findById(userId).isEmpty()) {
             throw new NullPointerException("Такого пользователя нет");
+        }
+        if (from < 0 || size < 0 || size == 0) {
+            throw new ValidationException("Неправильно указаны размеры!");
         }
         BookingState bookState;
         try {
@@ -162,31 +170,33 @@ public class BookingServiceDB implements BookingService {
         } catch (IllegalArgumentException e) {
             throw new ValidationException("Unknown state: " + state);
         }
-        List<Item> ownerItems = itemRepository.findAllByOwnerOrderById(userRepository.getById(userId));
+        // Здесь должны быть 0 и 10, так как этот лист не относится к букингу
+        List<Item> ownerItems = itemRepository.findAllByOwnerOrderById(userRepository.getById(userId),
+                getPage(0, 10)).toList();
         List<BookingFullDto> bookingsDto = new ArrayList<>();
         List<Booking> bookings;
         switch (bookState) {
             case CURRENT:
                 bookings = repository.findAllByItemInAndStartBeforeAndEndAfterOrderByStartDesc(
-                        ownerItems, LocalDateTime.now(), LocalDateTime.now());
-                bookings.sort(Comparator.comparing(Booking::getEnd).reversed());
+                        ownerItems, LocalDateTime.now(), LocalDateTime.now(), getPage(from, size,
+                                Sort.by(Sort.Direction.DESC, "start"))).getContent();
                 for (Booking book : bookings) {
                     bookingsDto.add(BookingMapper.toBookingFullDto(book));
                 }
                 return bookingsDto;
             case PAST:
                 bookings = repository.findAllByItemInAndStatusAndEndBeforeOrderByStartDesc(ownerItems,
-                        BookingStatus.APPROVED, LocalDateTime.now());
-                bookings.sort(Comparator.comparing(Booking::getEnd).reversed());
+                        BookingStatus.APPROVED, LocalDateTime.now(), getPage(from, size,
+                                Sort.by(Sort.Direction.ASC, "start"))).getContent();
                 for (Booking book : bookings) {
                     bookingsDto.add(BookingMapper.toBookingFullDto(book));
                 }
                 return bookingsDto;
             case FUTURE:
                 List<Booking> bookingsApprove = repository.findByItemInAndStatus(ownerItems,
-                        BookingStatus.APPROVED);
+                        BookingStatus.APPROVED, getPage(from, size)).getContent();
                 List<Booking> bookingsWaiting = repository.findByItemInAndStatus(ownerItems,
-                        BookingStatus.WAITING);
+                        BookingStatus.WAITING, getPage(from, size)).getContent();
                 for (Booking book : bookingsApprove) {
                     bookingsDto.add(BookingMapper.toBookingFullDto(book));
                 }
@@ -197,23 +207,23 @@ public class BookingServiceDB implements BookingService {
                 return bookingsDto;
             case WAITING:
                 bookings = repository.findByItemInAndStatus(ownerItems,
-                        BookingStatus.WAITING);
-                bookings.sort(Comparator.comparing(Booking::getStart).reversed());
+                        BookingStatus.WAITING, getPage(from, size,
+                                Sort.by(Sort.Direction.DESC, "start"))).getContent();
                 for (Booking book : bookings) {
                     bookingsDto.add(BookingMapper.toBookingFullDto(book));
                 }
                 return bookingsDto;
             case REJECTED:
                 bookings = repository.findByItemInAndStatus(ownerItems,
-                        BookingStatus.REJECTED);
-                bookings.sort(Comparator.comparing(Booking::getStart).reversed());
+                        BookingStatus.REJECTED, getPage(from, size,
+                                Sort.by(Sort.Direction.DESC, "start"))).getContent();
                 for (Booking book : bookings) {
                     bookingsDto.add(BookingMapper.toBookingFullDto(book));
                 }
                 return bookingsDto;
             case ALL:
-                bookings = repository.findByItemIn(ownerItems);
-                bookings.sort(Comparator.comparing(Booking::getStart).reversed());
+                bookings = repository.findByItemIn(ownerItems, PageRequest.of(from / size, size,
+                        Sort.by(Sort.Direction.DESC, "start"))).getContent();
                 for (Booking book : bookings) {
                     bookingsDto.add(BookingMapper.toBookingFullDto(book));
                 }
@@ -221,5 +231,13 @@ public class BookingServiceDB implements BookingService {
             default:
                 throw new ValidationException("Unknown state: UNSUPPORTED_STATUS");
         }
+    }
+
+    private PageRequest getPage(int from, int size, Sort sort) {
+        return PageRequest.of(from / size, size, sort);
+    }
+
+    private PageRequest getPage(int from, int size) {
+        return PageRequest.of(from / size, size);
     }
 }

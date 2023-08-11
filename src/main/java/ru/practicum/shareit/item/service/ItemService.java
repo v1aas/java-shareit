@@ -9,7 +9,7 @@ public interface ItemService {
 
     public ItemDto getItem(int userId, int itemId);
 
-    public List<ItemDto> getItems(int ownerId);
+    public List<ItemDto> getItems(int ownerId, int from, int size);
 
     public ItemDto postItem(int ownerId, ItemDto item);
 
@@ -17,7 +17,7 @@ public interface ItemService {
 
     public ItemDto deleteItem(int ownerId, int id);
 
-    public List<ItemDto> searchItem(String text);
+    public List<ItemDto> searchItem(String text, int from, int size);
 
     public CommentDto postComment(int userId, int itemid, CommentDto commentDto);
 }

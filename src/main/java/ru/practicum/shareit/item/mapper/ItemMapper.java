@@ -13,18 +13,8 @@ public class ItemMapper {
                 item.getAvailable(),
                 null,
                 null,
-                null
-        );
-    }
-
-    public static Item toItem(ItemDto item) {
-        return new Item(
                 null,
-                item.getName(),
-                item.getDescription(),
-                item.getAvailable(),
-                null,
-                null
+                item.getRequestId()
         );
     }
 }
