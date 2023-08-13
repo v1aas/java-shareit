@@ -2,12 +2,12 @@ package ru.practicum.shareit.user.controller;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import ru.practicum.shareit.user.dto.UserRequestDTO;
-import ru.practicum.shareit.user.UserClient;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
+import ru.practicum.shareit.user.UserClient;
+import ru.practicum.shareit.user.dto.UserRequestDTO;
 
 import javax.validation.Valid;
 
@@ -48,22 +48,4 @@ public class UserController {
         log.info("Delete user: {}", id);
         return client.deleteUser(id);
     }
-// TODO мейби надо??
-//    @ExceptionHandler
-//    @ResponseStatus(HttpStatus.CONFLICT)
-//    public ErrorResponse validationExp(final ConstraintViolationException e) {
-//        return new ErrorResponse(e.getMessage());
-//    }
-//
-//    @ExceptionHandler
-//    @ResponseStatus(HttpStatus.BAD_REQUEST)
-//    public ErrorResponse reqExp(final ValidationException e) {
-//        return new ErrorResponse(e.getMessage());
-//    }
-//
-//    @ExceptionHandler
-//    @ResponseStatus(HttpStatus.NOT_FOUND)
-//    public ErrorResponse nullExp(final EntityNotFoundException e) {
-//        return new ErrorResponse(e.getMessage());
-//    }
 }

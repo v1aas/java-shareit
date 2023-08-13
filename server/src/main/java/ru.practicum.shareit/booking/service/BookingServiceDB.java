@@ -89,9 +89,6 @@ public class BookingServiceDB implements BookingService {
         if (userRepository.findById(userId).isEmpty()) {
             throw new NullPointerException("Такого пользователя нет");
         }
-//        if (from < 0 || size < 0 || size == 0) {
-//            throw new ValidationException("Неправильно указаны размеры!");
-//        }
         BookingState bookState;
         try {
             bookState = BookingState.valueOf(state);
@@ -161,9 +158,6 @@ public class BookingServiceDB implements BookingService {
         if (userRepository.findById(userId).isEmpty()) {
             throw new NullPointerException("Такого пользователя нет");
         }
-//        if (from < 0 || size < 0 || size == 0) {
-//            throw new ValidationException("Неправильно указаны размеры!");
-//        }
         BookingState bookState;
         try {
             bookState = BookingState.valueOf(state);
